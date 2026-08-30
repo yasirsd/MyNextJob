@@ -35,6 +35,9 @@ Thumbs.db
 *.tsbuildinfo
 next-env.d.ts
 
+# Local scratch (tarball downloads, etc.)
+tmp/
+
 # Misc
 *.log
 npm-debug.log*

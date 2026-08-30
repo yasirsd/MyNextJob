@@ -50,9 +50,13 @@ user's resume, and notifies them when strong matches appear.
   (`eslint.config.mjs`).
 - **Typography** is Geist Sans (and optionally Geist Mono for data /
   code surfaces) via the `geist` package. No stand-in fonts.
-- **Supabase** backend via `@supabase/ssr`. Use the modern `getAll` /
-  `setAll` cookie adapter. Do NOT reintroduce `@supabase/auth-helpers-nextjs`
-  or the deprecated `get`/`set`/`remove` cookie trio.
+- **Supabase** backend via `@supabase/ssr` **0.12.x**. Use the modern
+  `getAll` / `setAll` cookie adapter. `setAll(cookies, headers)` is
+  required — copy the official `Cache-Control`, `Expires`, and `Pragma`
+  values onto the outgoing Next.js response so session-refresh responses
+  stay private/non-cacheable. Do NOT reintroduce
+  `@supabase/auth-helpers-nextjs`, the deprecated `get`/`set`/`remove`
+  cookie trio, or the old one-argument `setAll`.
 - **Next.js `proxy.ts` convention.** `src/proxy.ts` is a thin entry that
   calls `src/lib/supabase/proxy.ts` to refresh the cookie session. There
   is deliberately no `middleware.ts`. Proxy must stay lightweight — no
