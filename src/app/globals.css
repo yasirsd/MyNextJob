@@ -86,6 +86,22 @@
     inset 4px 4px 10px rgba(51, 66, 58, 0.14),
     inset -4px -4px 10px rgba(255, 253, 243, 0.7);
 
+  /* ---------- shadcn/ui aliases ----------
+     Mapped onto existing clay tokens so `pnpm dlx shadcn@latest add …`
+     lands on the MyNextJob palette instead of inventing new colors.
+     `secondary` stays a muted text color (not a surface) — that is
+     intentional and must not be overwritten to match shadcn defaults.
+  */
+  --color-card: #faf8f2;
+  --color-card-foreground: #202925;
+  --color-popover: #faf8f2;
+  --color-popover-foreground: #202925;
+  --color-accent: #ddf5ea;
+  --color-accent-foreground: #047857;
+  --color-input: #e6e1d2;
+  --color-ring: #10b981;
+  --radius: 14px;
+
   /* ---------- Animations ---------- */
   --animate-clay-shimmer: clay-shimmer 1.6s linear infinite;
 

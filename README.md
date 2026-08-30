@@ -6,8 +6,10 @@ MyNextJob is a mobile-first, installable job-search PWA. It discovers fresh
 jobs from company ATS/career systems and public feeds, matches them against
 your resume, and notifies you the moment your next opportunity appears.
 
-**Current phase: Phase 0 — Foundation.** No ingestion, matching, resume
-parsing, notifications, or auth flows exist yet. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
+**Current phase: Phase 1 — Authentication.** Email + password signup,
+confirmation, sign-in, reset, and sign-out. No resume upload, matching,
+or job ingestion yet. See [`docs/ROADMAP.md`](docs/ROADMAP.md) and
+[`docs/AUTH.md`](docs/AUTH.md).
 
 ## Stack
 
@@ -26,10 +28,12 @@ parsing, notifications, or auth flows exist yet. See [`docs/ROADMAP.md`](docs/RO
 
 ## Prerequisites
 
-- **Node.js 20.9+** (also enforced via `package.json#engines`)
+- **Node.js 20.9+** (enforced via `package.json#engines`; `.nvmrc` pins
+  Node 22, the current supported LTS used in development)
 - **pnpm 9+** (`corepack enable && corepack prepare pnpm@latest --activate`)
-- A [Supabase](https://supabase.com) project (for later phases; not required
-  to run Phase 0 locally)
+- A [Supabase](https://supabase.com) project with Email/Password enabled
+  (see [`docs/AUTH.md`](docs/AUTH.md)). The UI still renders without
+  credentials; sign-in will explain that auth is not connected.
 
 ## Installation
 
@@ -38,8 +42,10 @@ pnpm install
 cp .env.example .env.local  # then fill in your Supabase project values
 ```
 
-Phase 0 runs even without a real Supabase project connected — auth screens
-land in Phase 1.
+Copy `.env.example` to `.env.local`. Set `NEXT_PUBLIC_SITE_URL` to the
+origin you listed in the Supabase redirect allow-list (localhost in
+development). Dashboard email-template steps are documented in
+[`docs/AUTH.md`](docs/AUTH.md) and cannot be applied from this repo.
 
 ## Development
 
@@ -87,23 +93,28 @@ node scripts/generate-icons.mjs
 ```text
 src/
 ├── app/                     # App Router routes
+│   ├── (public)/            # Landing (`/`)
+│   ├── (auth)/              # Sign-in, sign-up, reset
+│   ├── (app)/home/          # Protected `/home`
+│   ├── auth/confirm         # Email OTP verification
+│   ├── auth/callback        # PKCE code exchange
 │   ├── design-system/       # Internal visual QA
 │   ├── globals.css          # Tailwind v4 @theme + clay utilities
-│   ├── layout.tsx           # Shell, safe-area, skip-link, Geist fonts
-│   ├── manifest.ts          # PWA manifest
-│   └── page.tsx             # Phase 0 home preview (sample data)
+│   ├── layout.tsx           # Geist, skip-link
+│   └── manifest.ts          # PWA manifest
 ├── components/
 │   ├── clay/                # Reusable clay primitives
 │   ├── ui/                  # shadcn/ui lands here (added on demand)
 │   ├── home/                # Home-preview client bits
 │   └── jobs/                # SampleJobCard (visual-only)
-├── features/                # Feature-scoped logic (mostly empty today)
+├── features/auth/           # Actions, schemas, safe redirects, forms
 ├── lib/
-│   ├── supabase/            # Browser / server client + proxy.ts helper
+│   ├── supabase/            # Browser / server client + session refresh
+│   ├── auth/                # getClaims() identity helpers
 │   └── validation/          # Zod schemas used at trust boundaries
-└── ...
+└── proxy.ts                 # Next.js 16 session-refresh entry
 supabase/
-└── migrations/              # 0001_initial_schema.sql + RLS + storage
+└── migrations/              # 0001 + 0002 (profile provisioning) + RLS
 scripts/
 └── generate-icons.mjs       # PWA icon generator (sharp)
 tests/

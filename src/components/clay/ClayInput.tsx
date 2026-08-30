@@ -13,12 +13,16 @@ export interface ClayInputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export const ClayInput = forwardRef<HTMLInputElement, ClayInputProps>(
   function ClayInput({ className, leading, trailing, ...rest }, ref) {
+    const invalid = rest['aria-invalid'] === true || rest['aria-invalid'] === 'true';
     return (
       <div
         className={cn(
           'group relative flex items-center gap-2 rounded-clay-lg bg-surface-pressed',
           'px-4 min-h-[48px] shadow-clay-pressed',
-          'focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-bright',
+          'focus-within:outline focus-within:outline-2 focus-within:outline-offset-2',
+          invalid
+            ? 'focus-within:outline-destructive outline outline-2 outline-offset-2 outline-destructive'
+            : 'focus-within:outline-primary-bright',
           className,
         )}
       >

@@ -2,6 +2,10 @@
 
 The initial schema lives in
 [`supabase/migrations/0001_initial_schema.sql`](../supabase/migrations/0001_initial_schema.sql).
+Phase 1 adds
+[`0002_auth_profile_provisioning.sql`](../supabase/migrations/0002_auth_profile_provisioning.sql):
+a `security definer` trigger on `auth.users` that inserts one
+`public.profiles` row (`full_name` from user metadata when present).
 
 Every user-owned table has RLS enabled with owner-only policies. Shared
 read-mostly tables (companies, jobs, skills, job_skills, job_sources) are
@@ -145,7 +149,9 @@ companies
 
 ## Storage policies (`resumes` bucket)
 
-The bucket is private (`public = false`, 10 MB cap, PDF/DOCX/DOC/TXT).
+The bucket is private (`public = false`, 10 MB cap, **PDF and DOCX only**).
+`.doc` binaries and `.txt` files are rejected on purpose — V1's parser
+only needs those two formats.
 Every object path must start with `{user_id}/`, and the policies use
 `storage.foldername(name)[1] = auth.uid()::text` to scope access.
 

@@ -4,6 +4,12 @@ MyNextJob uses **emerald claymorphism on warm ivory**. This document is the
 source of truth for how the visual language is expressed.
 
 Visual QA lives at [`/design-system`](../src/app/design-system/page.tsx).
+Viewport screenshots from the Playwright suite are written to `docs/qa/`.
+
+Tokens are declared once in `src/app/globals.css` inside the Tailwind v4
+`@theme` block. There is no `tailwind.config.*` and no `autoprefixer`.
+Components must consume semantic utilities (`bg-surface-raised`,
+`text-primary-deep`, `shadow-clay-raised`), never raw hex.
 
 ## Palette
 
@@ -27,9 +33,12 @@ Visual QA lives at [`/design-system`](../src/app/design-system/page.tsx).
 | `--warning`         | soft amber        | Warnings                           |
 | `--destructive`     | soft rose         | Errors / rejected                  |
 
-Colors are stored as HSL triplets so Tailwind opacity modifiers work
-(`bg-primary/10`). Components must consume the semantic aliases, never
-raw hex.
+Colors are stored as hex in `@theme`. Tailwind v4 still exposes opacity
+modifiers (`bg-primary/10`). `secondary` is a **text** color, not a
+surface — do not overwrite it to match stock shadcn defaults.
+
+shadcn-facing aliases (`card`, `popover`, `accent`, `input`, `ring`)
+map onto the same clay values so added primitives inherit the palette.
 
 ## Claymorphism philosophy
 
@@ -53,9 +62,6 @@ Where **not** to use heavy clay treatment:
 
 ## Tokens
 
-Radius scale, shadow depth, and semantic colors are all custom properties
-declared in `src/app/globals.css` and re-exported via `tailwind.config.ts`.
-
 ### Radius
 
 | Token             | Size  | Typical use                        |
@@ -77,8 +83,13 @@ declared in `src/app/globals.css` and re-exported via `tailwind.config.ts`.
 
 ## Typography
 
-Uses `next/font/google` Inter as a Geist-family substitute (single font,
-no extra deps). The typography scale is deliberately compact:
+**Geist Sans** is the product typeface, loaded through the `geist`
+package (`GeistSans` / `GeistMono` CSS variables on `<html>`). Geist
+ships as a variable font, so we do not load discrete weight files.
+
+Geist Mono is reserved for development / data surfaces.
+
+The typography scale is deliberately compact:
 
 | Role         | Size / line-height |
 | ------------ | ------------------ |
@@ -113,6 +124,9 @@ No parallax, no floating idle animations, no page-transition choreography.
   `ClayIconButton`'s TypeScript signature).
 - 44 × 44 minimum touch target for buttons, chips, and nav items.
 - Skip-to-content link in the layout.
+- Native `<button>` / `<input>` / `<a>` stay the baseline. Future dialogs,
+  selects, dropdowns, sheets, popovers, and tooltips must come from
+  shadcn/Radix — never a custom accessibility implementation.
 
 ## Components
 
@@ -127,3 +141,6 @@ Reusable primitives in `src/components/clay`:
 - `ClayBadge` — status/match label; `toneForMatchScore()` picks a tone.
 - `ClaySkeleton` — shape-preserving loading state.
 - `ClayNav` — fixed bottom navigation with safe-area padding.
+
+shadcn/ui components land in `src/components/ui/` when added with
+`pnpm dlx shadcn@latest add …`. They must keep consuming these tokens.

@@ -1,6 +1,7 @@
 export { ClaySurface, claySurface, type ClaySurfaceProps } from './ClaySurface';
 export { ClayCard } from './ClayCard';
-export { ClayButton, clayButton, type ClayButtonProps } from './ClayButton';
+export { ClayButton, type ClayButtonProps } from './ClayButton';
+export { clayButton } from './clayButtonStyles';
 export { ClayIconButton, type ClayIconButtonProps } from './ClayIconButton';
 export { ClayChip, type ClayChipProps } from './ClayChip';
 export { ClayInput, type ClayInputProps } from './ClayInput';

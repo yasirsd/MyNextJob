@@ -39,10 +39,12 @@ user's resume, and notifies them when strong matches appear.
   **no** `autoprefixer`. Tokens live in CSS, not JS.
 - **shadcn/ui** is configured (`components.json`); complex accessible
   primitives — dialog, select, dropdown, tooltip, popover, sheet — must be
-  added via `pnpm dlx shadcn@latest add …` and never hand-rolled.
-- **Native `<button>` / `<input>` / `<a>` are still the baseline.** The
-  clay primitives wrap them; do not swap a working native control for an
-  abstraction that removes semantics or focus behavior.
+  added via `pnpm dlx shadcn@latest add …` and never hand-rolled. Do not
+  invent custom focus traps, portals, or listbox keyboard behavior.
+- **Native `<button>` / `<input>` / `<a>` are still the baseline.** Clay
+  primitives wrap them (`ClayButton`, `ClayIconButton`, `ClayInput`,
+  `ClayChip`, `ClayNav`). Do not swap a working native control for a
+  Radix/shadcn abstraction just for consistency.
 - **ESLint** runs directly (`pnpm lint` → `eslint .`). `next lint` was
   removed in Next.js 16 and must not come back. Config is flat
   (`eslint.config.mjs`).
@@ -51,9 +53,16 @@ user's resume, and notifies them when strong matches appear.
 - **Supabase** backend via `@supabase/ssr`. Use the modern `getAll` /
   `setAll` cookie adapter. Do NOT reintroduce `@supabase/auth-helpers-nextjs`
   or the deprecated `get`/`set`/`remove` cookie trio.
-- **Next.js `proxy.ts` convention.** The session-refresh helper lives at
-  `src/lib/supabase/proxy.ts` and will be invoked from a project-root
-  `proxy.ts` in Phase 1. There is deliberately no `middleware.ts`.
+- **Next.js `proxy.ts` convention.** `src/proxy.ts` is a thin entry that
+  calls `src/lib/supabase/proxy.ts` to refresh the cookie session. There
+  is deliberately no `middleware.ts`. Proxy must stay lightweight — no
+  database or profile queries, no complete authorization.
+- **Trusted identity** uses `supabase.auth.getClaims()` on the server.
+  Do not authorize from `getSession()`. Protected layouts also verify
+  identity; Proxy is not the security boundary.
+- **Auth is email + password only** (signup, confirm, sign-in, reset,
+  sign-out). Do not add OAuth, magic-link-only, or phone auth unless a
+  later phase asks for it. `?next=` must go through `sanitizeNext()`.
 - **RLS is required** on every user-owned table. Never rely on client-side
   filtering for security.
 - **Private resumes.** The `resumes` storage bucket is private; paths are
@@ -83,8 +92,10 @@ Before every future task:
 ## Scope control
 
 - Do **not** implement work from later phases unless explicitly instructed.
-- Phase 0 is foundation only. Phases: 0 Foundation · 1 Auth · 2 Profile+Resume ·
-  3 Job Engine · 4 Sources · 5 Discovery UI · 6 Matching · 7 Applications ·
+- Phase 1 (Authentication) is implemented. Do not add resume upload,
+  onboarding, job ingestion, or matching here.
+- Phases: 0 Foundation · 1 Auth · 2 Profile+Resume · 3 Job Engine ·
+  4 Sources · 5 Discovery UI · 6 Matching · 7 Applications ·
   8 Notifications · 9 PWA/Offline · 10 Production QA.
 
 ## When in doubt

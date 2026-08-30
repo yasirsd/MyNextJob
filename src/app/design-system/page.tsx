@@ -102,10 +102,18 @@ export default function DesignSystemPage() {
 
       <Section title="Radius scale">
         <div className="grid grid-cols-5 gap-3">
-          {(['sm', 'md', 'lg', 'xl', '2xl'] as const).map((r) => (
-            <div key={r} className="space-y-2 text-center">
-              <div className={`h-16 bg-primary-soft shadow-clay-soft rounded-clay-${r}`} />
-              <p className="text-[11px] font-medium text-secondary">{r}</p>
+          {(
+            [
+              { label: 'sm', className: 'rounded-clay-sm' },
+              { label: 'md', className: 'rounded-clay-md' },
+              { label: 'lg', className: 'rounded-clay-lg' },
+              { label: 'xl', className: 'rounded-clay-xl' },
+              { label: '2xl', className: 'rounded-clay-2xl' },
+            ] as const
+          ).map((r) => (
+            <div key={r.label} className="space-y-2 text-center">
+              <div className={`h-16 bg-primary-soft shadow-clay-soft ${r.className}`} />
+              <p className="text-[11px] font-medium text-secondary">{r.label}</p>
             </div>
           ))}
         </div>

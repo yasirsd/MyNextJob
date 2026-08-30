@@ -5,19 +5,36 @@ Phase 0 is complete when the app has the foundation described in
 [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md). Later phases build features on
 top of that foundation without changing it.
 
-## Phase 0 — Foundation *(current)*
+## Phase 0 — Foundation *(complete)*
 
-Next.js + strict TypeScript + Tailwind + shadcn/ui-style clay primitives +
-Motion + Supabase clients + initial migration with RLS + private resume
-storage + design tokens + app shell + PWA manifest + testing infrastructure
-+ documentation.
+Next.js + strict TypeScript + Tailwind + clay primitives + Motion +
+Supabase clients + initial migration with RLS + private resume storage +
+design tokens + app shell + PWA manifest + testing infrastructure +
+documentation.
 
-## Phase 1 — Authentication
+## Phase 0.1 — Foundation modernization *(complete)*
 
-- Sign-in and sign-up screens (email + magic link + OAuth).
-- Session-aware layout, protected route groups, `middleware.ts` wired to
-  `src/lib/supabase/middleware.ts`.
-- Password reset flow.
+Stay on Phase 0 product scope. Upgrade the foundation to the current
+supported toolchain without adding Authentication:
+
+- Next.js 16 Active LTS + React 19
+- Tailwind CSS v4 (`@tailwindcss/postcss`, `@theme`)
+- ESLint 9 flat config (`eslint .`, not `next lint`)
+- Geist Sans / Mono (no Inter stand-in)
+- shadcn/ui initialized (`components.json`) for later Radix primitives
+- Next.js `proxy.ts` helper naming (`src/lib/supabase/proxy.ts`)
+- PWA PNG icons generated from the canonical SVG
+- Resume storage restricted to PDF and DOCX
+
+## Phase 1 — Authentication *(complete)*
+
+Email + password only (no OAuth / magic-link-only / phone):
+
+- Sign up, email confirmation (`/auth/confirm`), sign in, sign out
+- Forgot / reset password (`/auth/callback` PKCE exchange)
+- `src/proxy.ts` session refresh + `getClaims()` on protected `/home`
+- Safe `?next=` sanitizer; profile provisioning trigger
+- See [`AUTH.md`](./AUTH.md) for dashboard setup and the manual QA list
 
 ## Phase 2 — Profile & resume
 

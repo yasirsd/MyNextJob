@@ -1,5 +1,26 @@
 # Architecture
 
+## Stack (Phase 0)
+
+| Layer            | Choice                                                         |
+| ---------------- | -------------------------------------------------------------- |
+| Framework        | **Next.js 16.3.3** (App Router, Active LTS) + **React 19**     |
+| Runtime          | **Node.js ≥ 20.9** (`.nvmrc` pins 22)                          |
+| Styling          | **Tailwind CSS v4** via `@tailwindcss/postcss`                 |
+| Tokens           | `@theme` block in `src/app/globals.css` — no `tailwind.config.*` |
+| Components       | Clay primitives + **shadcn/ui** (`components.json`, add on demand) |
+| Typography       | **Geist Sans / Mono** via the `geist` package                  |
+| Motion           | `motion/react`                                                 |
+| Backend          | Supabase (`@supabase/ssr` + `@supabase/supabase-js`)           |
+| Validation       | Zod at trust boundaries                                        |
+| Lint             | ESLint 9 flat config — `pnpm lint` → `eslint .`                |
+| Unit tests       | Vitest                                                         |
+| E2E              | Playwright                                                     |
+
+Never downgrade Next.js off the current Active LTS without explicit
+written authorization. `next lint` was removed in Next.js 16 and must
+not be reintroduced.
+
 ## Frontend
 
 Next.js App Router with **Server Components by default**. Client Components
@@ -12,34 +33,60 @@ are opted into explicitly with `"use client"` and are used only for:
 
 The shell (`src/app/layout.tsx`) provides:
 
-- Warm-ivory background and font token
+- Warm-ivory background and Geist font tokens
 - A centered mobile container (`max-w-2xl`) with safe-area padding
 - A "skip to content" link for keyboard users
 - The fixed `ClayNav` bottom navigation
 
-Design tokens live in `src/app/globals.css` as CSS custom properties. Every
-color, radius, shadow, and clay depth is a token; components use semantic
-Tailwind aliases wired up in `tailwind.config.ts`.
+Design tokens live in `src/app/globals.css` as Tailwind v4 `@theme`
+custom properties. Every color, radius, shadow, and clay depth is a
+token; components use semantic utilities (`bg-surface-raised`,
+`text-primary-deep`, `shadow-clay-raised`) — never raw hex.
+
+## Accessibility primitives
+
+- `ClayButton`, `ClayIconButton`, `ClayChip` wrap a native `<button>`
+  (via `motion.button`).
+- `ClayInput` wraps a native `<input>`.
+- `ClayNav` uses Next.js `<Link>` (`<a>`).
+- Complex overlays (dialog, select, dropdown, sheet, popover, tooltip)
+  must be added with `pnpm dlx shadcn@latest add …` so they ship with
+  Radix accessibility. Do not hand-roll focus traps or listboxes.
 
 ## Server / client boundary
 
-| Concern              | Where it lives                                   |
-| -------------------- | ------------------------------------------------ |
-| Session refresh      | `src/lib/supabase/middleware.ts` (via `middleware.ts` in Phase 1) |
-| RSC data fetching    | `src/lib/supabase/server.ts` (`getAll`/`setAll` cookies) |
-| Client interactions  | `src/lib/supabase/client.ts` (browser client)   |
-| Trusted mutations    | Route Handlers / Server Actions using the server client |
-| Privileged workers   | Server-only code with `SUPABASE_SERVICE_ROLE_KEY` (Phase 4+) |
+| Concern              | Where it lives                                                      |
+| -------------------- | ------------------------------------------------------------------- |
+| Session refresh      | `src/proxy.ts` → `src/lib/supabase/proxy.ts` (`getClaims()`, cookie `setAll` + cache headers) |
+| RSC data fetching    | `src/lib/supabase/server.ts` (`getAll`/`setAll` cookies)            |
+| Client interactions  | `src/lib/supabase/client.ts` (browser client)                       |
+| Trusted mutations    | Route Handlers / Server Actions using the server client             |
+| Privileged workers   | Server-only code with `SUPABASE_SERVICE_ROLE_KEY` (Phase 4+)        |
+
+There is deliberately **no** `middleware.ts`. Next.js 16 uses
+`src/proxy.ts`. That file only refreshes the session. Login walls live
+on protected Server Component layouts via `getAuthIdentity()` /
+`requireAuth()` (`getClaims()`, not `getSession()`).
+
+`?next=` is sanitized by `sanitizeNext()` — only allow-listed internal
+paths (`/home`, `/profile`, `/saved`, `/search`, `/activity`).
+
+Auth feature code: `src/features/auth/`. Dashboard setup:
+[`AUTH.md`](./AUTH.md).
 
 The publishable (anon) key is safe to expose in the browser because every
 table is protected by RLS. The service_role key **never** appears in any
 `NEXT_PUBLIC_*` variable and is only introduced in later phases.
 
+Do **not** reintroduce `@supabase/auth-helpers-nextjs` or the deprecated
+`get` / `set` / `remove` cookie trio.
+
 ## Supabase architecture
 
-- **Auth**: Supabase Auth (email/OAuth) — Phase 1.
+- **Auth**: Supabase Auth, email + password (Phase 1). Profile rows are
+  provisioned by `0002_auth_profile_provisioning.sql`. OAuth is later.
 - **Database**: Postgres schema in `supabase/migrations/0001_initial_schema.sql`.
-- **Storage**: private `resumes` bucket, owner-scoped RLS on `storage.objects`.
+- **Storage**: private `resumes` bucket (PDF/DOCX only, 10 MB), owner-scoped RLS on `storage.objects`.
 - **Edge Functions**: reserved for later phases (ingestion, notifications).
 
 See [`DATABASE.md`](./DATABASE.md) for tables and relationships.
@@ -98,3 +145,4 @@ column exists so the UI can explain matches without recomputing them.
 - No microservices, message brokers, Docker, Kubernetes, Redis, or
   Elasticsearch. Next.js + Supabase carries the workload comfortably.
 - No LLM/embedding calls in Phase 0.
+- No LinkedIn / Naukri / Workday scraping as a core dependency.

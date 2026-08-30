@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
-import { ClayNav } from '@/components/clay/ClayNav';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -46,12 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
-        <div className="mx-auto flex min-h-dvh max-w-2xl flex-col safe-x">
-          <main id="main" className="flex-1 pb-32 pt-4" role="main">
-            {children}
-          </main>
-        </div>
-        <ClayNav />
+        {children}
       </body>
     </html>
   );

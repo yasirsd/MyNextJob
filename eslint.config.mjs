@@ -1,41 +1,15 @@
-import { FlatCompat } from '@eslint/eslintrc';
-import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import globals from 'globals';
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
+import { defineConfig, globalIgnores } from 'eslint/config';
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import nextTs from 'eslint-config-next/typescript';
 
-// FlatCompat lets us reuse Next.js's shared ESLint config (which still ships
-// as an "extends" name) inside the flat-config world.
-const compat = new FlatCompat({
-  baseDirectory: path.dirname(fileURLToPath(import.meta.url)),
-});
-
-export default [
+/**
+ * Next.js 16 ships `eslint-config-next` as native flat config.
+ * `pnpm lint` runs `eslint .` — `next lint` was removed and must not return.
+ */
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
   {
-    ignores: [
-      'node_modules/**',
-      '.next/**',
-      'out/**',
-      'build/**',
-      'coverage/**',
-      'playwright-report/**',
-      'test-results/**',
-      'next-env.d.ts',
-    ],
-  },
-
-  js.configs.recommended,
-  ...tseslint.configs.recommended,
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
-
-  {
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-      },
-    },
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -49,12 +23,22 @@ export default [
       '@next/next/no-img-element': 'warn',
     },
   },
-
-  // Tests can be a bit more relaxed about `any` and unused mocks.
   {
     files: ['tests/**/*.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
-];
+  globalIgnores([
+    'node_modules/**',
+    '.next/**',
+    'out/**',
+    'build/**',
+    'coverage/**',
+    'playwright-report/**',
+    'test-results/**',
+    'next-env.d.ts',
+  ]),
+]);
+
+export default eslintConfig;

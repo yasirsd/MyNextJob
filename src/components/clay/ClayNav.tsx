@@ -18,17 +18,20 @@ interface NavItem {
  * once Phase 5 lands). Safe-area padding keeps it clear of the iOS home
  * indicator without stealing tap area from the tabs above it.
  */
-const items: readonly NavItem[] = [
-  { href: '/',           label: 'Home',     Icon: Home },
-  { href: '/search',     label: 'Search',   Icon: Search },
-  { href: '/saved',      label: 'Saved',    Icon: Bookmark },
-  { href: '/activity',   label: 'Activity', Icon: Activity },
-  { href: '/profile',    label: 'Profile',  Icon: User },
-] as const;
+function navItems(homeHref: string): readonly NavItem[] {
+  return [
+    { href: homeHref, label: 'Home', Icon: Home },
+    { href: '/search', label: 'Search', Icon: Search },
+    { href: '/saved', label: 'Saved', Icon: Bookmark },
+    { href: '/activity', label: 'Activity', Icon: Activity },
+    { href: '/profile', label: 'Profile', Icon: User },
+  ];
+}
 
-export function ClayNav() {
+export function ClayNav({ homeHref = '/' }: { homeHref?: string }) {
   const pathname = usePathname();
   const reduced = useReducedMotion();
+  const items = navItems(homeHref);
 
   return (
     <nav
@@ -48,7 +51,9 @@ export function ClayNav() {
       >
         {items.map(({ href, label, Icon }) => {
           const active =
-            href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
+            href === '/' || href === '/home'
+              ? pathname === href
+              : pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
               key={href}
